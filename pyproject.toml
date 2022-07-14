@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "timed_borders"
+version = '0.1.0'
+description = "Short description of the project"
+authors = ["Vlad Tabakov <vl.tab.kov@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+toml = "^0.10.2"
+fastapi = "^0.78.0"
+uvicorn = {extras = ["standard"], version = "^0.18.2"}
+numpy = "^1.23.1"
+tortoise-orm = {extras = ["asyncpg", "accel"], version = "^0.19.2"}
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.1"
+
+[build-system]
+requires=["setuptools>=41", "wheel", "setuptools-git-versioning"]
+build-backend="setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true
