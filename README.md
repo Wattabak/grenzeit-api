@@ -3,6 +3,15 @@
 
 A backend of the Grenzeit project
 
+## Requirements
+
+### System requirements
+
+For shapely: [libgeos-dev ](https://libgeos.org/usage/install/)
+I shall note that this is consistently one of the most irritating libraries to deal with, issues with not being able to find geos on mac m1 are resolved with this:
+```export DYLD_LIBRARY_PATH=/opt/homebrew/opt/geos/lib/```
+
+For orjson: [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)
 
 ## Development
 
