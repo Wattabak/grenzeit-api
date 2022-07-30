@@ -10,7 +10,8 @@ toml = "^0.10.2"
 fastapi = "^0.78.0"
 uvicorn = {extras = ["standard"], version = "^0.18.2"}
 numpy = "^1.23.1"
-tortoise-orm = {extras = ["asyncpg", "accel"], version = "^0.19.2"}
+neomodel = {extras = ["extras"], version = "^4.0.8"}
+loguru = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.1"
