@@ -1,23 +1,59 @@
-from tortoise import fields
-from tortoise.models import Model
+from neomodel import StructuredNode, RelationshipTo, StructuredRel
+from neomodel.properties import BooleanProperty, StringProperty, UniqueIdProperty, DateProperty, \
+    IntegerProperty, JSONProperty, DateTimeProperty
 
 
-class MetaDataMixin:
-    created_at = fields.DatetimeField(null=True, auto_now_add=True)
-    modified_at = fields.DatetimeField(null=True, auto_now=True)
+class User(StructuredNode):
+    id = UniqueIdProperty()
+    username = StringProperty()
+    password = StringProperty()
+    email = StringProperty()
+    is_active = BooleanProperty()
 
 
-class User(Model, MetaDataMixin):
-    pk = fields.IntField(pk=True, unique=True)
-    id = fields.UUIDField()
-    username = fields.CharField(40, null=False, )
-    password = fields.CharField(120, null=False, )
-    email = fields.CharField(20, required=False)
-    is_active = fields.BooleanField(default=False)
-
-    class Meta:
-        table = "user"
+class Territory(StructuredNode):
+    id = UniqueIdProperty()
+    geometry = JSONProperty()
 
 
-class Country(Model):
-    pass
+class ClaimedTerritoryRel(StructuredRel):
+    date_start = DateTimeProperty()
+    date_end = DateTimeProperty()
+
+
+class Country(StructuredNode):
+    uid = UniqueIdProperty()
+    name_eng = StringProperty()
+    name_zeit = StringProperty()
+    founded_at = DateProperty(required=True)
+    dissolved_at = DateProperty(required=False, )
+
+    claims_territory = RelationshipTo(Territory, rel_type='TERRITORY', model=ClaimedTerritoryRel)
+
+
+class PointOfInterest(StructuredNode):
+    # geometry = PointProperty(crs='')
+    uid = UniqueIdProperty()
+
+
+class Population(StructuredNode):
+    date_census = DateProperty()
+    total = IntegerProperty()
+    by_language = JSONProperty()
+    by_faith = JSONProperty()
+    by_political_affiliation = JSONProperty()
+    by_gender = JSONProperty()
+    approximations = JSONProperty()  # maps field names to the degree of certainty in them
+
+
+class PersonOfInterest(StructuredNode):
+    uid = UniqueIdProperty()
+    name = StringProperty()
+    born_at = DateProperty()
+    deceased = DateProperty()
+
+
+class DataSource(StructuredNode):
+    uid = UniqueIdProperty()
+    description = StringProperty()
+    permalink = StringProperty()
