@@ -27,7 +27,7 @@ class FixedLoggingConfig(Config):
 if __name__ == "__main__":
     config = FixedLoggingConfig(
         "grenzeit.services.asgi:app",
-        host="0.0.0.0",
+        host=settings.HOSTNAME,
         log_level=settings.LOG_LEVEL,
         port=settings.HOST_PORT,
         reload=settings.DEBUG
@@ -41,7 +41,3 @@ if __name__ == "__main__":
         ChangeReload(config, target=server.run, sockets=[sock]).run()
     else:
         server.run()
-    # setup logging last, to make sure no library overwrites it
-    # setup_logging()
-
-    # server.run()

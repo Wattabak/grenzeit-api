@@ -1,30 +1,13 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 
-from grenzeit.config import logger
-from grenzeit.models import CountryModel
-from grenzeit.schema import Country
+from grenzeit.api_v1.countries import router as countries
 
-api_v1 = FastAPI(docs_url="/docs")
+api_v1 = FastAPI(docs_url='/docs')
+
+api_v1.include_router(countries)
 
 
-@api_v1.get("/locales")
+@api_v1.get('/locales', tags=['locales'])
 async def available_name_locales():
-    return {
+    raise NotImplementedError
 
-    }
-
-
-@api_v1.get("/countries")
-async def get_countries():
-    return await Country.nodes.all()
-
-
-@api_v1.post("/countries")
-async def post_countries(country: CountryModel):
-    try:
-        country = Country(**country.dict())
-        country.save()
-    except Exception as e:
-        logger.exception(e)
-        return Response(status_code=500)
-    return Response(status_code=200)

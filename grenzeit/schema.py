@@ -1,5 +1,4 @@
 from neomodel import StructuredNode, RelationshipTo, StructuredRel
-from neomodel.contrib.spatial_properties import PointProperty
 from neomodel.properties import BooleanProperty, StringProperty, UniqueIdProperty, DateProperty, \
     IntegerProperty, JSONProperty, DateTimeProperty
 
@@ -13,7 +12,7 @@ class User(StructuredNode):
 
 
 class Territory(StructuredNode):
-    id = IntegerProperty(unique_index=True)
+    id = UniqueIdProperty()
     geometry = JSONProperty()
 
 
@@ -23,18 +22,18 @@ class ClaimedTerritoryRel(StructuredRel):
 
 
 class Country(StructuredNode):
-    id = IntegerProperty(unique_index=True)
-    founded_at = DateProperty(required=False)
-    dissolved_at = DateProperty(required=True, )
-    name_zeit = StringProperty()
+    uid = UniqueIdProperty()
     name_eng = StringProperty()
+    name_zeit = StringProperty()
+    founded_at = DateProperty(required=True)
+    dissolved_at = DateProperty(required=False, )
 
     claims_territory = RelationshipTo(Territory, rel_type='TERRITORY', model=ClaimedTerritoryRel)
 
 
 class PointOfInterest(StructuredNode):
-    id = IntegerProperty(unique_index=True)
     # geometry = PointProperty(crs='')
+    uid = UniqueIdProperty()
 
 
 class Population(StructuredNode):
@@ -48,13 +47,13 @@ class Population(StructuredNode):
 
 
 class PersonOfInterest(StructuredNode):
-    id = IntegerProperty(unique_index=True)
+    uid = UniqueIdProperty()
     name = StringProperty()
     born_at = DateProperty()
     deceased = DateProperty()
 
 
 class DataSource(StructuredNode):
-    id = IntegerProperty(unique_index=True)
+    uid = UniqueIdProperty()
     description = StringProperty()
     permalink = StringProperty()

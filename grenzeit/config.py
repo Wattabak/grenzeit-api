@@ -15,6 +15,7 @@ class AppSettings(BaseSettings):
     DEBUG: bool = True
     JSON_LOGS: bool = False
     LOG_LEVEL: str = 'DEBUG'
+    HOSTNAME: str = '0.0.0.0'
 
     @validator('LOG_LEVEL')
     def log_level_validate(cls, value):
