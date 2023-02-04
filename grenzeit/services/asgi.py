@@ -9,7 +9,7 @@ from grenzeit.logging import setup_logging
 
 config.DATABASE_URL = settings.DATABASE_URL
 
-app = FastAPI(docs_url='/docs')
+app = FastAPI()
 
 app.mount('/api/v1', api_v1)
 

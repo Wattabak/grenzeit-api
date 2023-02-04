@@ -14,9 +14,10 @@ services:
       - ./plugins:/plugins
     environment:
       # Raise memory limits
-      - NEO4J_dbms_memory_pagecache_size=1G
-      - NEO4J_dbms.memory.heap.initial_size=1G
-      - NEO4J_dbms_memory_heap_max__size=1G
+      - NEO4J_server.memory.pagecache.size=1G
+      - NEO4J_server.memory.heap.initial_size=1G
+      - NEO4J_server.memory.heap.max_size=1G
+      - NEO4J_AUTH=neo4j/test12345
     networks:
       - common_net
 
@@ -33,7 +34,8 @@ services:
 #    networks:
 #      - common_net
 
-  api:
+  grenzeit:
+    container_name: grenzeit
     ports:
       - "8001:8000"
     build:
@@ -41,7 +43,7 @@ services:
       dockerfile: "docker/Dockerfile"
     env_file: ../.env
     volumes:
-      - .:/mira
+      - ..:/code/:rw
     networks:
       - common_net
 
@@ -74,4 +76,4 @@ secrets:
 networks:
   # The presence of these objects is sufficient to define them
   front-tier: {}
-  common_net: {}
+  common_net:

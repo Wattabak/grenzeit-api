@@ -12,7 +12,6 @@ from grenzeit.schema import Country
 router = APIRouter(
     prefix="/countries",
     tags=["Countries"],
-
 )
 
 

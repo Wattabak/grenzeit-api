@@ -10,7 +10,7 @@ __all__ = [
 
 
 class AppSettings(BaseSettings):
-    DATABASE_URL: str = 'bolt://neo4j:test@localhost:7687'
+    DATABASE_URL: str = 'bolt://neo4j:test@0.0.0.0:7687'
     HOST_PORT: int = 8000
     DEBUG: bool = True
     JSON_LOGS: bool = False
