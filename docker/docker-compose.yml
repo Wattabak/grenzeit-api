@@ -1,5 +1,6 @@
 services:
   neo4j:
+    hostname: neo4j
     container_name: neo4j
     image: neo4j:latest
     restart: unless-stopped
@@ -21,20 +22,8 @@ services:
     networks:
       - common_net
 
-#  nginx:
-#    container_name: nginx
-#    build:
-#      context: ./nginx
-#    volumes:
-#      - staticfiles_root:/mira/static
-#      - ./media:/mira/media:ro
-#      - .:/app/:ro
-#    ports:
-#      - "0.0.0.0:80:80"
-#    networks:
-#      - common_net
-
   grenzeit:
+    hostname: grenzeit
     container_name: grenzeit
     ports:
       - "8001:8000"
@@ -47,33 +36,14 @@ services:
     networks:
       - common_net
 
-#  frontend:
-#    image: awesome/webapp
-#    ports:
-#      - "443:8043"
-#    networks:
-#      - front-tier
-#      - back-tier
-#    configs:
-#      - httpd-config
-#    secrets:
-#      - server-certificate
-
 volumes:
   db-data:
     driver: flocker
     driver_opts:
       size: "10GiB"
 
-configs:
-  httpd-config:
-    external: true
-
-secrets:
-  server-certificate:
-    external: true
-
 networks:
   # The presence of these objects is sufficient to define them
   front-tier: {}
   common_net:
+    name: grenzeit_network

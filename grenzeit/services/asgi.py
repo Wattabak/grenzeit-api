@@ -1,17 +1,28 @@
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from neomodel import config
 from uvicorn import Server, Config
 from uvicorn.supervisors import ChangeReload
 
-from grenzeit.api_v1.main import api_v1
+from grenzeit.api.v1.main import v1
 from grenzeit.config import settings
 from grenzeit.logging import setup_logging
 
 config.DATABASE_URL = settings.DATABASE_URL
 
-app = FastAPI()
 
-app.mount('/api/v1', api_v1)
+def create_app():
+    app = FastAPI()
+
+    app.mount("/api/v1", v1)
+
+    app.mount("/api/latest", v1)
+
+    @app.get("/")
+    async def docs_redirect():
+        return RedirectResponse(url='/api/latest/redoc')
+
+    return app
 
 
 class FixedLoggingConfig(Config):
@@ -24,6 +35,8 @@ class FixedLoggingConfig(Config):
         setup_logging()
 
 
+app = create_app()
+
 if __name__ == "__main__":
     config = FixedLoggingConfig(
         "grenzeit.services.asgi:app",
@@ -32,9 +45,7 @@ if __name__ == "__main__":
         port=settings.HOST_PORT,
         reload=settings.DEBUG
     )
-    server = Server(
-        config
-    )
+    server = Server(config)
 
     if settings.DEBUG:
         sock = config.bind_socket()
