@@ -28,7 +28,7 @@ class Country(StructuredNode):
     founded_at = DateProperty(required=True)
     dissolved_at = DateProperty(required=False, )
 
-    claims_territory = RelationshipTo(Territory, rel_type='TERRITORY', model=ClaimedTerritoryRel)
+    claims_territory = RelationshipTo(Territory, "TERRITORY", model=ClaimedTerritoryRel)
 
 
 class PointOfInterest(StructuredNode):
