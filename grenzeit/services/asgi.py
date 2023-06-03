@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from neomodel import config
 from uvicorn import Server, Config
@@ -17,6 +18,17 @@ def create_app():
     app.mount("/api/v1", v1)
 
     app.mount("/api/latest", v1)
+
+    origins = [
+        "http://0.0.0.0:3001",
+        "http://0.0.0.0:3000"
+    ]
+    app.add_middleware(CORSMiddleware,
+                       allow_origins=origins,
+                       allow_origin_regex=r"http://*.grenzeit.com",
+                       allow_methods=["*"],
+                       allow_headers=["*"],
+                       )
 
     @app.get("/")
     async def docs_redirect():

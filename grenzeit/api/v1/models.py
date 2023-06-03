@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 
 class CountryModel(BaseModel):
-    uid: str
+    uid: str | None
     founded_at: datetime | date
     dissolved_at: Optional[datetime | date] = Field(
         description='When, if ever, the country stopped existing/changed its name etc.'

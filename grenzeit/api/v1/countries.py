@@ -5,7 +5,7 @@ from fastapi_pagination.paginator import paginate
 from loguru import logger
 from neomodel import DoesNotExist
 from starlette.responses import Response
-
+from neomodel import db
 from grenzeit.api.v1.models import CountryModel
 from grenzeit.api.v1.schema import Country
 
@@ -20,7 +20,7 @@ async def list_countries():
     """Paginated list of available countries"""
     # TODO inefficient for now and needs a new paginate function extension for neo4j
     countries = Country.nodes.all()
-    print(countries[0])
+    logger.info(countries[0])
     pages = paginate([CountryModel(**country.__dict__) for country in countries])
     return pages
 
@@ -37,26 +37,31 @@ async def post_country(country: CountryModel):
         return Response(status_code=500)
 
 
-@router.put('/')
-async def update_country(country: CountryModel):
-    c = Country.nodes.get(uid=country.uid)
-    c.update(**country.dict())
+@router.put('/{country_id}')
+async def update_country(country_id: str, country_data: CountryModel) ->Response:
+    c = Country.nodes.get(uid=country_id)
+    with db.transaction:
+        for k, v in country_data.dict(exclude={"uid"}).items():
+            setattr(c, k, v)
+        c.save()
+        return Response(status_code=200)
 
-
-@router.get('/{country}', response_model=CountryModel)
-async def get_country(country: int) -> CountryModel | Response:
+@router.get('/{country_id}', response_model=CountryModel)
+async def get_country(country_id: str) -> CountryModel | Response:
     """Retrieve single Country object"""
     try:
-        return CountryModel(**Country.nodes.get(uid=country).__dict__)
+        c = CountryModel(**Country.nodes.get(uid=country_id).__dict__)
+        logger.info(f"Retrieved country object with id {country_id}")
+        return c
     except DoesNotExist:
-        logger.debug(f'Country with id {country} does not exist')
+        logger.debug(f'Country with id {country_id} does not exist')
         return Response(None, status_code=404)
 
 
-@router.delete('/{country}')
-async def delete_country(country: str):
+@router.delete('/{country_id}')
+async def delete_country(country_id: str):
     try:
-        Country.nodes.get(uid=country).delete()
+        Country.nodes.get(uid=country_id).delete()
     except Exception as e:
         logger.exception(e)
         return Response(status_code=500)

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from grenzeit.api.v1.countries import router as countries
 from fastapi_pagination import add_pagination
+
 v1 = FastAPI(
     version="1.0.0",
     title="Grenzeit",
