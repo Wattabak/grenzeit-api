@@ -1,4 +1,5 @@
 import logging
+import os
 
 from loguru import logger
 from pydantic import BaseSettings, validator
@@ -7,6 +8,8 @@ __all__ = [
     'settings',
     'logger'
 ]
+
+ENVFILE_PATH = os.environ.get("ENVFILE_PATH", ".env")
 
 
 class AppSettings(BaseSettings):
@@ -22,7 +25,7 @@ class AppSettings(BaseSettings):
         return logging.getLevelName(value)
 
     class Config:
-        env_file = '.env'
+        env_file = ENVFILE_PATH
 
 
-settings = AppSettings(_env_file=".env")
+settings = AppSettings(_env_file=ENVFILE_PATH)

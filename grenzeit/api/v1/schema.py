@@ -1,10 +1,10 @@
 from neomodel import StructuredNode, RelationshipTo, StructuredRel
 from neomodel.properties import BooleanProperty, StringProperty, UniqueIdProperty, DateProperty, \
-    IntegerProperty, JSONProperty, DateTimeProperty
+    JSONProperty, DateTimeProperty
 
 
 class User(StructuredNode):
-    id = UniqueIdProperty()
+    uid = UniqueIdProperty()
     username = StringProperty()
     password = StringProperty()
     email = StringProperty()
@@ -12,13 +12,13 @@ class User(StructuredNode):
 
 
 class Territory(StructuredNode):
-    id = UniqueIdProperty()
+    uid = UniqueIdProperty()
     geometry = JSONProperty()
 
 
 class ClaimedTerritoryRel(StructuredRel):
-    date_start = DateTimeProperty()
-    date_end = DateTimeProperty()
+    date_start = DateProperty()
+    date_end = DateProperty(required=False)
 
 
 class Country(StructuredNode):
@@ -30,30 +30,29 @@ class Country(StructuredNode):
 
     claims_territory = RelationshipTo(Territory, "TERRITORY", model=ClaimedTerritoryRel)
 
-
-class PointOfInterest(StructuredNode):
-    # geometry = PointProperty(crs='')
-    uid = UniqueIdProperty()
-
-
-class Population(StructuredNode):
-    date_census = DateProperty()
-    total = IntegerProperty()
-    by_language = JSONProperty()
-    by_faith = JSONProperty()
-    by_political_affiliation = JSONProperty()
-    by_gender = JSONProperty()
-    approximations = JSONProperty()  # maps field names to the degree of certainty in them
+# class PointOfInterest(StructuredNode):
+#     # geometry = PointProperty(crs='')
+#     uid = UniqueIdProperty()
 
 
-class PersonOfInterest(StructuredNode):
-    uid = UniqueIdProperty()
-    name = StringProperty()
-    born_at = DateProperty()
-    deceased = DateProperty()
+# class Population(StructuredNode):
+#     date_census = DateProperty()
+#     total = IntegerProperty()
+#     by_language = JSONProperty()
+#     by_faith = JSONProperty()
+#     by_political_affiliation = JSONProperty()
+#     by_gender = JSONProperty()
+#     approximations = JSONProperty()  # maps field names to the degree of certainty in them
+#
+#
+# class PersonOfInterest(StructuredNode):
+#     uid = UniqueIdProperty()
+#     name = StringProperty()
+#     born_at = DateProperty()
+#     deceased = DateProperty()
 
 
-class DataSource(StructuredNode):
-    uid = UniqueIdProperty()
-    description = StringProperty()
-    permalink = StringProperty()
+# class DataSource(StructuredNode):
+#     uid = UniqueIdProperty()
+#     description = StringProperty()
+#     permalink = StringProperty()

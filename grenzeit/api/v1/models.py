@@ -1,23 +1,46 @@
 from datetime import datetime, date
 from typing import Optional
 
+from geojson_pydantic import MultiPolygon, Polygon
 from pydantic import BaseModel, Field
 
 
 # class TerritoryType(Enum):
 #     pass
 
-
-class CountryModel(BaseModel):
+class ReadOnlyIdMixin(BaseModel):
+    """This is a model that implements a read-only id field"""
     uid: str | None
+
+
+class TerritoryBase(BaseModel):
+    date_start: date
+    date_end: date | None
+    geometry: MultiPolygon | Polygon
+
+
+class TerritoryGetModel(TerritoryBase, ReadOnlyIdMixin):
+    pass
+
+
+class TerritoryModel(TerritoryBase):
+    pass
+
+
+class CountryBase(BaseModel):
     founded_at: datetime | date
     dissolved_at: Optional[datetime | date] = Field(
         description='When, if ever, the country stopped existing/changed its name etc.'
     )
     name_zeit: str = Field(description='Name of the country as it is/was called by its citizens')
     name_eng: str = Field(description='en_US name of the country')
+    territory: TerritoryModel | None
 
-# class TerritoryModel(BaseModel):
-#     date_start: datetime | date
-#     date_end: datetime | date
-#     # geometry: MultiPolygon
+
+class CountryGetModel(CountryBase, ReadOnlyIdMixin):
+    """This is a model that implements a read-only id field"""
+    pass
+
+
+class CountryModel(CountryBase):
+    pass

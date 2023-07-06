@@ -31,6 +31,12 @@ docker compose -f docker/docker-compose.yml up -d --build
 DYLD_LIBRARY_PATH='/opt/homebrew/opt/geos/lib/' python3 -m grenzeit.services.asgi 
 ```
 
+## Migrations
+
+```commandline
+neomodel_install_labels grenzeit/api/v1/schema.py --db 'bolt://neo4j:test12345@localhost:7687' 
+
+```
 ### Running tests
 
 ```shell
