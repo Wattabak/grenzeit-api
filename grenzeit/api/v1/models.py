@@ -34,6 +34,7 @@ class CountryBase(BaseModel):
     )
     name_zeit: str = Field(description='Name of the country as it is/was called by its citizens')
     name_eng: str = Field(description='en_US name of the country')
+    cluster: str
     territory: TerritoryModel | None
 
 
@@ -44,3 +45,18 @@ class CountryGetModel(CountryBase, ReadOnlyIdMixin):
 
 class CountryModel(CountryBase):
     pass
+
+
+class ClusterModel(BaseModel):
+    uid: str | None
+    name: str
+    geometry: MultiPolygon | Polygon
+    boundary: MultiPolygon | Polygon | None
+
+
+class ClusterListModel(BaseModel):
+    clusters: list[ClusterModel]
+
+
+class GeometryBase(BaseModel):
+    name: str
