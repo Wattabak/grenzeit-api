@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
 from fastapi_pagination.paginator import paginate
@@ -20,8 +22,47 @@ async def list_countries():
     """Paginated list of available countries"""
     # TODO inefficient for now and needs a new paginate function extension for neo4j
     countries = Country.nodes.all()
-    pages = paginate([CountryGetModel(**country.__dict__) for country in countries])
-    return pages
+    return paginate([
+        CountryGetModel(
+            cluster=country.cluster[0].name,
+            founded_at=country.founded_at,
+            dissolved_at=country.dissolved_at,
+            uid=country.uid,
+            name_eng=country.name_eng,
+            name_zeit=country.name_zeit,
+        )
+        for country in countries
+    ])
+
+
+@router.get("/world/{cluster}", )
+async def world(cluster: str, show_date: date | None) -> list[CountryGetModel]:
+    """Get countries in a cluster by date"""
+    parsed_date = show_date.strftime("%Y-%m-%d")
+    countries, meta = db.cypher_query(
+        f"MATCH (t:Territory)-[rt:TERRITORY]-(z:Country)"
+        f"-[:CLUSTER]->(c:Cluster {{name: '{cluster}'}})"
+        f"WHERE rt.date_start <= '{parsed_date}' and (rt.date_end >= '{parsed_date}' or rt.date_end is null)"
+        f" RETURN z, rt, c, t",
+        resolve_objects=True
+    )
+    response = []
+    for country, rel, cluster, terr in countries:
+        # TODO: still too damn slow :(
+        # gotta figure out a way to stream this somehow
+        # leaning towards sockets for now
+        territory = TerritoryModel(**terr.__dict__, date_start=rel.date_start)
+        response.append(CountryGetModel(
+            cluster=cluster.name,
+            founded_at=country.founded_at,
+            dissolved_at=country.dissolved_at,
+            uid=country.uid,
+            name_eng=country.name_eng,
+            name_zeit=country.name_zeit,
+            territory=territory
+        ))
+
+    return response
 
 
 @router.post('/')
@@ -62,7 +103,15 @@ async def get_country(country_id: str) -> CountryGetModel | Response:
         rel = country.claims_territory.relationship(territory)
         territory.date_end = rel.date_end
         territory.date_start = rel.date_start
-        c = CountryGetModel(**country.__dict__, territory=territory.__dict__)
+        c = CountryGetModel(
+            cluster=country.cluster[0].name,
+            founded_at=country.founded_at,
+            dissolved_at=country.dissolved_at,
+            uid=country.uid,
+            name_eng=country.name_eng,
+            name_zeit=country.name_zeit,
+            territory=territory.__dict__
+        )
         logger.info(f"Retrieved country object with id {country_id}")
         return c
     except DoesNotExist:
