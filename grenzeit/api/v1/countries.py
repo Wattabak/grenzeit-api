@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi.routing import APIRouter
 from fastapi_pagination import Page
 from fastapi_pagination.paginator import paginate
@@ -6,7 +8,7 @@ from neomodel import DoesNotExist
 from neomodel import db
 from starlette.responses import Response
 
-from grenzeit.api.v1.models import CountryModel, TerritoryModel, CountryGetModel, ClusterModel
+from grenzeit.api.v1.models import CountryModel, TerritoryModel, CountryGetModel
 from grenzeit.api.v1.schema import Country, Territory
 
 router = APIRouter(
@@ -34,16 +36,19 @@ async def list_countries():
 
 
 @router.get("/world/{cluster}", )
-async def world(cluster: str) -> list[CountryGetModel]:
-    """"""
+async def world(cluster: str, show_date: date | None) -> list[CountryGetModel]:
+    """Get countries in a cluster by date"""
+    parsed_date = show_date.strftime("%Y-%m-%d")
     countries, meta = db.cypher_query(
         f"MATCH (t:Territory)-[rt:TERRITORY]-(z:Country)"
-        f"-[:CLUSTER]->(c:Cluster {{name: '{cluster}'}}) RETURN z, rt, c, t",
+        f"-[:CLUSTER]->(c:Cluster {{name: '{cluster}'}})"
+        f"WHERE rt.date_start <= '{parsed_date}' and (rt.date_end >= '{parsed_date}' or rt.date_end is null)"
+        f" RETURN z, rt, c, t",
         resolve_objects=True
     )
     response = []
     for country, rel, cluster, terr in countries:
-        #TODO: still too damn slow :(
+        # TODO: still too damn slow :(
         # gotta figure out a way to stream this somehow
         # leaning towards sockets for now
         territory = TerritoryModel(**terr.__dict__, date_start=rel.date_start)

@@ -34,7 +34,7 @@ class CountryBase(BaseModel):
     )
     name_zeit: str = Field(description='Name of the country as it is/was called by its citizens')
     name_eng: str = Field(description='en_US name of the country')
-    cluster: str
+    cluster: str | None = None
     territory: TerritoryModel | None
 
 
