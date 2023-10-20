@@ -52,6 +52,6 @@ async def get_clusters() -> ClusterListModel:
     return ClusterListModel(
         clusters=[
             ClusterModel(uid=cluster.uid, name=cluster.name, geometry=cluster.geometry)
-            for cluster in Cluster.nodes
+            for cluster in Cluster.nodes.all()
         ]
     )

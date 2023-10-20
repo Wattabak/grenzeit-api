@@ -38,10 +38,20 @@ class CountryBase(BaseModel):
     territory: TerritoryModel | None
 
 
-class CountryGetModel(CountryBase, ReadOnlyIdMixin):
-    """This is a model that implements a read-only id field"""
+class CountryGetFrozenModel(CountryBase, ReadOnlyIdMixin):
+    """Return a country object at a certain point in time
+
+    This will return an object with properties that were applicable at a requested point in time
+    """
     pass
 
+
+class CountryGetFullModel(CountryBase, ReadOnlyIdMixin):
+    """"""
+    territories: list[TerritoryGetModel]
+
+    class Config:
+        fields = {'territory': {'exclude': True}}
 
 class CountryModel(CountryBase):
     pass

@@ -8,7 +8,7 @@ from neomodel import DoesNotExist
 from neomodel import db
 from starlette.responses import Response
 
-from grenzeit.api.v1.models import CountryModel, TerritoryModel, CountryGetModel
+from grenzeit.api.v1.models import CountryModel, TerritoryModel, CountryGetFrozenModel, CountryGetFullModel
 from grenzeit.api.v1.schema import Country, Territory
 
 router = APIRouter(
@@ -17,13 +17,13 @@ router = APIRouter(
 )
 
 
-@router.get('/', response_model=Page[CountryGetModel])
+@router.get('/', response_model=Page[CountryGetFrozenModel])
 async def list_countries():
     """Paginated list of available countries"""
     # TODO inefficient for now and needs a new paginate function extension for neo4j
-    countries = Country.nodes.all()
+    countries = Country.nodes.order_by('name_eng')
     return paginate([
-        CountryGetModel(
+        CountryGetFrozenModel(
             cluster=country.cluster[0].name,
             founded_at=country.founded_at,
             dissolved_at=country.dissolved_at,
@@ -36,7 +36,7 @@ async def list_countries():
 
 
 @router.get("/world/{cluster}", )
-async def world(cluster: str, show_date: date | None) -> list[CountryGetModel]:
+async def world(cluster: str, show_date: date | None) -> list[CountryGetFrozenModel]:
     """Get countries in a cluster by date"""
     parsed_date = show_date.strftime("%Y-%m-%d")
     countries, meta = db.cypher_query(
@@ -52,7 +52,7 @@ async def world(cluster: str, show_date: date | None) -> list[CountryGetModel]:
         # gotta figure out a way to stream this somehow
         # leaning towards sockets for now
         territory = TerritoryModel(**terr.__dict__, date_start=rel.date_start)
-        response.append(CountryGetModel(
+        response.append(CountryGetFrozenModel(
             cluster=cluster.name,
             founded_at=country.founded_at,
             dissolved_at=country.dissolved_at,
@@ -85,7 +85,7 @@ async def post_country(country: CountryModel):
 
 
 @router.put('/{country_id}')
-async def update_country(country_id: str, country_data: CountryGetModel) -> Response:
+async def update_country(country_id: str, country_data: CountryGetFrozenModel) -> Response:
     c = Country.nodes.get(uid=country_id)
     with db.transaction:
         for k, v in country_data.dict(exclude={"uid"}).items():
@@ -94,30 +94,81 @@ async def update_country(country_id: str, country_data: CountryGetModel) -> Resp
         return Response(status_code=200)
 
 
-@router.get('/{country_id}', response_model=CountryGetModel)
-async def get_country(country_id: str) -> CountryGetModel | Response:
-    """Retrieve single Country object"""
-    try:
-        country = Country.nodes.get(uid=country_id)
-        territory = country.claims_territory.get()
-        rel = country.claims_territory.relationship(territory)
-        territory.date_end = rel.date_end
-        territory.date_start = rel.date_start
-        c = CountryGetModel(
-            cluster=country.cluster[0].name,
-            founded_at=country.founded_at,
-            dissolved_at=country.dissolved_at,
-            uid=country.uid,
-            name_eng=country.name_eng,
-            name_zeit=country.name_zeit,
-            territory=territory.__dict__
-        )
-        logger.info(f"Retrieved country object with id {country_id}")
-        return c
-    except DoesNotExist:
+@router.get('/{country_id}', response_model=CountryGetFrozenModel)
+async def get_country(country_id: str, at_date: date | None = None) -> CountryGetFrozenModel | Response:
+    """Retrieve a single country object at a certain point in time
+
+    if at_date is missing, return latest territory
+    """
+    main_query = (f"MATCH (territory:Territory)-[terr_rel:TERRITORY]-(country:Country {{uid: '{country_id}'}})"
+                 f"-[:CLUSTER]->(cluster:Cluster) ")
+    condition = (f"WHERE terr_rel.date_start <= '{at_date}' " 
+                f"and (terr_rel.date_end >= '{at_date}' or terr_rel.date_end is null) ")
+    if not at_date:
+        condition = ""
+    data, meta = db.cypher_query(
+        f"{main_query}"
+        f"{condition}"
+        f"RETURN country, terr_rel, territory, cluster",
+        resolve_objects=True
+    )
+
+    country, terr_rel, territory, cluster = data[0]
+    if not country:
         logger.debug(f'Country with id {country_id} does not exist')
         return Response(None, status_code=404)
+    logger.info(f"Retrieved country object with id {country_id}")
 
+    return CountryGetFrozenModel(
+        uid=country.uid,
+        cluster=cluster.name,
+        founded_at=country.founded_at,
+        dissolved_at=country.dissolved_at,
+        name_eng=country.name_eng,
+        name_zeit=country.name_zeit,
+        territory=TerritoryModel(
+            date_end=terr_rel.date_end,
+            date_start=terr_rel.date_start,
+            geometry=territory.geometry,
+        )
+    )
+
+
+@router.get('/full/{country_id}', response_model=CountryGetFullModel)
+async def get_full_country(country_id: str) -> CountryGetFullModel | Response:
+    """Retrieves a country object with properties throughout existence of that country
+
+    Basically as opposed to frozen it returns ALL territories, ALL flags and dates
+    """
+    data, meta = db.cypher_query(
+        f"MATCH (territories:Territory)-[terr_rels:TERRITORY]-(country:Country {{uid: '{country_id}'}})"
+        f"-[:CLUSTER]->(cluster:Cluster) "
+        f"RETURN country, collect(terr_rels), collect(territories), cluster",
+        resolve_objects=True
+    )
+    country, terr_rels, territories, cluster = data[0]
+    if not country:
+        logger.debug(f'Country with id {country_id} does not exist')
+        return Response(None, status_code=404)
+    logger.info(f"Retrieved country object with id {country_id}")
+
+    return CountryGetFullModel(
+        cluster=cluster.name,
+        founded_at=country.founded_at,
+        dissolved_at=country.dissolved_at,
+        uid=country.uid,
+        name_eng=country.name_eng,
+        name_zeit=country.name_zeit,
+        territories=[
+            TerritoryModel(
+                uid=territory.uid,
+                date_end=terr_rel.date_end,
+                date_start=terr_rel.date_start,
+                geometry=territory.geometry,
+            )
+            for territory, terr_rel in zip(territories[0], terr_rels[0])
+        ]
+    )
 
 @router.delete('/{country_id}')
 async def delete_country(country_id: str):
