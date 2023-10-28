@@ -2,7 +2,8 @@ import logging
 import os
 
 from loguru import logger
-from pydantic import BaseSettings, validator
+from pydantic import field_validator
+from pydantic_settings import BaseSettings
 
 __all__ = [
     'settings',
@@ -20,7 +21,7 @@ class AppSettings(BaseSettings):
     LOG_LEVEL: str = 'DEBUG'
     HOSTNAME: str = '0.0.0.0'
 
-    @validator('LOG_LEVEL')
+    @field_validator('LOG_LEVEL')
     def log_level_validate(cls, value):
         return logging.getLevelName(value)
 

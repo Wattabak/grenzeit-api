@@ -4,6 +4,8 @@ WORKDIR /code
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
   libgeos-dev \
+  libgdal-dev \
+  gdal-bin \
   && rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements.txt /requirements.txt
