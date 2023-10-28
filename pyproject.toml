@@ -1,22 +1,24 @@
 [tool.poetry]
 name = "timed_borders"
-version = '0.1.0'
+version = "1.0.0"
 description = "Short description of the project"
 authors = ["Vlad Tabakov <vl.tab.kov@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 toml = "^0.10.2"
-fastapi = "^0.95.2"
+fastapi = "^0.104.0"
 uvicorn = {extras = ["standard"], version = "^0.18.2"}
 numpy = "^1.24.3"
 neomodel = "^5.0.0"
 loguru = "^0.6.0"
 fastapi-pagination = "^0.12.4"
 shapely = "^2.0.1"
-geojson-pydantic = "^0.6.2"
+geojson-pydantic = "^1.0.1"
 geojson = "^3.0.1"
 geopandas = "^0.13.2"
+pydantic = "^2.4.2"
+pydantic-settings = "^2.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.3.1"

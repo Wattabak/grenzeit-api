@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi_pagination import add_pagination
 
+from grenzeit.api.v1.admin import router as admin
 from grenzeit.api.v1.countries import router as countries
 from grenzeit.api.v1.geometries import router as geometries
 
@@ -11,6 +12,7 @@ v1 = FastAPI(
 
 v1.include_router(countries)
 v1.include_router(geometries)
+v1.include_router(admin)
 add_pagination(v1)
 
 
